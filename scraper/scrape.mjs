@@ -29,6 +29,8 @@ const IGNORED = path.join(SITE, 'data', 'ignored.json'); // other sellers' listi
 
 const SELLER_PROFILE_ID = process.env.SELLER_PROFILE_ID || '1756646479';
 const MAX_PHOTOS = 20;
+const REFRESH_HOURS = 20;          // re-open each listed car about once a day for price/photo changes
+const MAX_START_DELAY_MIN = 30;    // scheduled runs start at a random time so visits don't land like clockwork
 // Facebook shows other people's listings on the profile page too, so every car must
 // belong to Dad: the listing's business name or seller name has to match this.
 const SELLER_MATCH = new RegExp(process.env.SELLER_MATCH || 'triumph motor|tino martinez', 'i');
@@ -178,7 +180,16 @@ function cleanDescription(text) {
 }
 
 // ---- Main ----
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const hoursSince = iso => iso ? (Date.now() - Date.parse(iso)) / 36e5 : Infinity;
+const forCompare = cars => JSON.stringify(cars.map(({ checkedAt, missingRuns, ...c }) => c));
+
 async function main() {
+  if (process.env.GITHUB_EVENT_NAME === 'schedule') {
+    const mins = Math.random() * MAX_START_DELAY_MIN;
+    log(`Waiting ${mins.toFixed(1)} min before starting (random delay for scheduled runs).`);
+    await sleep(mins * 60000);
+  }
   const previous = await readJson(INVENTORY, { cars: [] });
   const known = new Map(previous.cars.map(c => [c.id, c]));
   const manual = new Set(await readManualIds());
@@ -196,9 +207,25 @@ async function main() {
   if (loggedCtx) discovery = await discoverFromProfile(loggedCtx);
   else log('No FB_COOKIES secret set — only checking known cars and listings.txt.');
 
-  const candidates = [...new Set([...known.keys(), ...discovery.ids, ...manual])]
-    .filter(id => manual.has(id) || !ignored.has(id));
-  log(`Checking ${candidates.length} listing(s).`);
+  // Only open the listing pages that need it, to keep Facebook visits low:
+  //  - listings we haven't seen before
+  //  - cars that dropped off Dad's profile (probably sold or deleted)
+  //  - cars not re-checked in the last ~day (price, photo or description changes)
+  //  - anything still waiting to be confirmed gone
+  // If the profile couldn't be read, we can't tell what dropped off, so every car gets checked.
+  const onProfile = new Set(discovery.ids);
+  const all = [...new Set([...known.keys(), ...discovery.ids, ...manual])]
+    .filter(id => !ignored.has(id));
+  const candidates = shuffle(all.filter(id => {
+    const car = known.get(id);
+    if (!car) return true;
+    if (!discovery.ok) return true;
+    if (car.missingRuns) return true;
+    if (!onProfile.has(id)) return true;
+    return hoursSince(car.checkedAt) >= REFRESH_HOURS;
+  }));
+  const untouched = all.filter(id => known.has(id) && !candidates.includes(id));
+  log(`Opening ${candidates.length} listing(s); ${untouched.length} unchanged car(s) skipped this run.`);
 
   const results = [];
   for (const id of candidates) {
@@ -208,6 +235,9 @@ async function main() {
     await jitter(1500, 4000);
   }
   const readOk = results.filter(([, r]) => r.status === 'ok').length;
+  const pagesLoaded = results.filter(([, r]) => r.status !== 'unknown').length;
+  // Trust a "listing is gone" page only when Facebook is otherwise behaving normally.
+  const facebookOk = readOk > 0 || discovery.ok;
 
   const next = [];
   for (const [id, r] of results) {
@@ -220,29 +250,33 @@ async function main() {
         continue;
       }
       if (!isVehicle) { log(`  ${id}: not a vehicle — skipped`); continue; }
-      if (c.sold || !c.live) { log(`  ${id}: sold/removed — taking down`); continue; }
+      if (c.sold || !c.live) { log(`  ${id}: sold/removed — taking down`); ignored.add(id); continue; }
       const photos = await syncPhotos(c);
       const { photoUrls, ...rest } = c;
       next.push({ ...rest, description: cleanDescription(c.description), photos,
-        firstSeen: known.get(id)?.firstSeen || new Date().toISOString() });
+        firstSeen: known.get(id)?.firstSeen || new Date().toISOString(), checkedAt: new Date().toISOString() });
       log(`  ${id}: ${c.title} — ${c.priceText}${c.pending ? ' (pending)' : ''} — ${photos.length} photos`);
     } else if (known.has(id) && !manual.has(id) && !isDads(known.get(id))) {
       log(`  ${id}: couldn't confirm the seller — removing`);
-    } else if (r.status === 'gone' && known.has(id) && readOk > 0) {
+    } else if (r.status === 'gone' && known.has(id) && facebookOk) {
       // "Not available" pages can be a temporary Facebook glitch, so a car has to
       // come back missing on two runs in a row (4+ hours apart) before it's taken down.
       const strikes = (known.get(id).missingRuns || 0) + 1;
-      if (strikes >= 2) { log(`  ${id}: listing gone two runs in a row — taking down`); continue; }
+      if (strikes >= 2) { log(`  ${id}: listing gone two runs in a row — taking down`); ignored.add(id); continue; }
       log(`  ${id}: listing looks gone — will confirm next run before taking down`);
       next.push({ ...known.get(id), missingRuns: strikes });
     } else if (known.has(id)) {
       log(`  ${id}: couldn't read this run — keeping last known version`);
       next.push(known.get(id));
+    } else if (r.status === 'gone' && facebookOk) {
+      log(`  ${id}: listing doesn't exist — skipping from now on`);
+      ignored.add(id);
     } else {
       log(`  ${id}: couldn't read new listing — will retry next run`);
     }
   }
   await browser.close();
+  for (const id of untouched) next.push(known.get(id));
 
   // Delete photo folders for cars no longer listed.
   const liveIds = new Set(next.map(c => c.id));
@@ -253,7 +287,7 @@ async function main() {
   await fs.writeFile(IGNORED, JSON.stringify([...ignored].slice(-1000)) + '\n');
 
   next.sort((a, b) => (b.listedAt || '').localeCompare(a.listedAt || ''));
-  const changed = JSON.stringify(next) !== JSON.stringify(previous.cars);
+  const changed = forCompare(next) !== forCompare(previous.cars);
   const out = {
     updatedAt: changed ? new Date().toISOString() : (previous.updatedAt || new Date().toISOString()),
     cars: next,
@@ -264,7 +298,7 @@ async function main() {
 
   // Fail loudly (GitHub emails the owner) when Facebook couldn't be read at all.
   const problems = [];
-  if (candidates.length > 0 && readOk === 0) problems.push('Could not read ANY listing pages — Facebook may be blocking the scraper or changed its page layout.');
+  if (candidates.length > 0 && pagesLoaded === 0) problems.push('Could not read ANY listing pages — Facebook may be blocking the scraper or changed its page layout.');
   if (loggedCtx && !discovery.ok) problems.push('Could not read the seller profile — the bot account cookies (FB_COOKIES) probably expired. New cars will not be picked up until they are refreshed.');
   if (problems.length) {
     console.error('\nPROBLEM:\n- ' + problems.join('\n- '));
