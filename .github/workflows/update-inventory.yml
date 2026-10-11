@@ -2,8 +2,8 @@ name: Update inventory from Facebook
 
 on:
   schedule:
-    - cron: '17 */4 * * *'   # every 4 hours
-  workflow_dispatch:          # "Run workflow" button on GitHub
+    - cron: '7 12-23 * * *'   # hourly check, ~7am–6pm Central; the gate below runs the scraper once a day
+  workflow_dispatch:           # "Run workflow" button on GitHub (always runs right away)
   push:
     branches: [main]
     paths: ['site/**', 'listings.txt', 'scraper/**', '.github/workflows/**']
@@ -18,7 +18,38 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Decides whether today's scrape should happen now. Never touches Facebook.
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: site/data
+      - id: decide
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != "schedule" ]; then
+            echo "Manual or upload run: going ahead."; echo "run=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          today=$(TZ=America/Chicago date +%F)
+          hour=$(TZ=America/Chicago date +%-H)
+          # A different random-looking hour each day, between 8am and 5pm Central.
+          seed=$(echo -n "$today-triumph" | md5sum | tr -dc '0-9' | cut -c1-6); seed=${seed:-0}
+          pick=$(( 8 + 10#$seed % 10 ))
+          last=$(cat site/data/last-run.txt 2>/dev/null || echo none)
+          echo "Today: $today  now: ${hour}:00  today's pick: ${pick}:00  last scrape: $last"
+          if [ "$last" = "$today" ]; then
+            echo "Already scraped today."; echo "run=false" >> "$GITHUB_OUTPUT"
+          elif [ "$hour" -ge "$pick" ]; then
+            echo "Time for today's scrape."; echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Not yet."; echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
   update:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -45,19 +76,16 @@ jobs:
 
       - name: Save changes
         run: |
+          # Record today's run (even if it failed) so a flagged account isn't retried every hour.
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
+            TZ=America/Chicago date +%F > site/data/last-run.txt
+          fi
           git config user.name "inventory-bot"
           git config user.email "inventory-bot@users.noreply.github.com"
           git add -A site
           if ! git diff --cached --quiet; then
             git commit -m "Update inventory"
             git push
-          else
-            # GitHub pauses scheduled jobs after 60 days without commits; keep it alive.
-            last=$(git log -1 --format=%ct)
-            if [ $(( $(date +%s) - last )) -gt $(( 45 * 86400 )) ]; then
-              git commit --allow-empty -m "Keep scheduled updates running"
-              git push
-            fi
           fi
 
       - uses: actions/configure-pages@v5
