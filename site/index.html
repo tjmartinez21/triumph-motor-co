@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Triumph Motor Company</title>
+<meta name="description" content="Used cars for sale at 7160 Canyon Dr, Amarillo, Texas. Cash or bank financing. Se habla español.">
+<meta name="theme-color" content="#3b1612">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:title" content="Triumph Motor Company">
+<meta property="og:description" content="Used cars in Amarillo, TX. Cash or bank financing. Se habla español.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Layout: maroon header that echoes the business card (centered script logo, tracked caps address)
+   → one grid of cars → tap a car for photos + spec sheet. */
+:root {
+  --brand: #3b1612;        /* Triumph maroon, from the business card */
+  --brand-ink: #ffffff;
+  --bg: #f5f0ee;           /* warm off-white leaning toward the maroon */
+  --surface: #ffffff;
+  --ink: #241211;
+  --muted: #7a6662;
+  --line: #e4d9d5;
+  --tag-bg: #3b1612;       /* price tag */
+  --tag-ink: #ffffff;
+  --action: #3b1612;       /* call buttons */
+  --action-ink: #ffffff;
+  --pending: #a8561c;
+  --display: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  --body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #160b0a; --surface: #221311; --ink: #f2e9e6; --muted: #b29d98; --line: #3a2421;
+    --tag-bg: #f2e9e6; --tag-ink: #3b1612; --action: #f2e9e6; --action-ink: #3b1612; --pending: #e08a4e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #160b0a; --surface: #221311; --ink: #f2e9e6; --muted: #b29d98; --line: #3a2421;
+  --tag-bg: #f2e9e6; --tag-ink: #3b1612; --action: #f2e9e6; --action-ink: #3b1612; --pending: #e08a4e;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 400 17px/1.5 var(--body); -webkit-font-smoothing: antialiased; }
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; }
+.caps { font-family: var(--display); font-weight: 600; text-transform: uppercase; letter-spacing: .28em; }
+
+/* Header — the business card */
+header.dealer { background: var(--brand); color: var(--brand-ink); text-align: center; padding-block: 44px 0; }
+.logo { width: min(560px, 86%); margin: 0 auto; }
+.logo svg { width: 100%; height: auto; display: block; color: var(--brand-ink); }
+.addr { display: inline-block; margin-top: 22px; font-size: clamp(12px, 2.6vw, 15px); letter-spacing: .14em; text-decoration: none; opacity: .92; }
+.addr:hover { opacity: 1; text-decoration: underline; text-underline-offset: 4px; }
+.addr .dash { opacity: .55; }
+.nw { white-space: nowrap; }
+.phone { display: block; margin-top: 10px; font-family: var(--display); font-weight: 700; font-size: clamp(22px, 4.5vw, 28px); letter-spacing: .06em; text-decoration: none; }
+.perks { margin-top: 30px; border-top: 1px solid rgba(255,255,255,.16); padding-block: 14px; }
+.perks ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 34px; font-size: 12px; }
+.perks li { opacity: .85; }
+
+/* Toolbar */
+.bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding-block: 34px 18px; }
+.bar h2 { margin: 0; font-size: 15px; }
+.bar h2 span { color: var(--muted); font-weight: 500; letter-spacing: .12em; }
+.bar label { font-size: 15px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+select { font: inherit; font-size: 15px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; }
+
+/* Grid */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 22px; padding-bottom: 56px; }
+.car {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow: hidden;
+  display: flex; flex-direction: column; cursor: pointer; text-align: left; padding: 0; font: inherit; color: inherit;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.car:hover { transform: translateY(-2px); box-shadow: 0 12px 28px -16px rgba(59,22,18,.5); }
+.car:focus-visible { outline: 3px solid var(--action); outline-offset: 2px; }
+.shot { position: relative; aspect-ratio: 4 / 3; background: var(--line); width: 100%; }
+.shot img { width: 100%; height: 100%; object-fit: cover; }
+.count { position: absolute; right: 10px; bottom: 10px; background: rgba(0,0,0,.66); color: #fff; font-size: 13px; padding: 2px 8px; border-radius: 3px; }
+.flag { position: absolute; left: 0; top: 14px; background: var(--pending); color: #fff; font-family: var(--display); font-weight: 700; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; padding: 5px 12px; }
+.flag.new { background: var(--brand); }
+.info { padding: 16px 18px 18px; display: grid; gap: 10px; flex: 1; align-content: start; }
+.top { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+.name { min-width: 0; }
+.year { font-family: var(--display); font-weight: 600; font-size: 12px; letter-spacing: .22em; color: var(--muted); }
+.model { margin: 2px 0 0; font-family: var(--display); font-weight: 800; font-size: 21px; line-height: 1.15; text-wrap: balance; }
+.trim { color: var(--muted); font-size: 15px; margin-top: 2px; }
+.price { flex: none; background: var(--tag-bg); color: var(--tag-ink); font-family: var(--display); font-weight: 800; font-size: 18px; padding: 5px 11px; border-radius: 3px; font-variant-numeric: tabular-nums; }
+.specs { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 15px; color: var(--muted); }
+.specs b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.empty { grid-column: 1 / -1; background: var(--surface); border: 1px dashed var(--line); border-radius: 6px; padding: 40px 24px; text-align: center; }
+.empty h3 { font-family: var(--display); font-weight: 800; font-size: 20px; margin: 0 0 6px; }
+.empty p { margin: 0; color: var(--muted); }
+
+/* Detail sheet */
+dialog { border: 0; padding: 0; width: min(1040px, 100vw); max-width: 100vw; max-height: 100dvh; background: var(--surface); color: var(--ink); border-radius: 8px; }
+dialog::backdrop { background: rgba(20,8,7,.78); }
+@media (max-width: 700px) { dialog { border-radius: 0; height: 100dvh; } }
+.sheet { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+@media (max-width: 860px) { .sheet { grid-template-columns: minmax(0, 1fr); } }
+.gallery { background: #0e0605; display: grid; grid-template-rows: auto auto; min-width: 0; }
+.stage { position: relative; aspect-ratio: 4 / 3; }
+.stage img { width: 100%; height: 100%; object-fit: contain; }
+.nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255,255,255,.92); color: #3b1612; font-size: 24px; cursor: pointer; display: grid; place-items: center; }
+.nav:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.nav.prev { left: 10px; } .nav.next { right: 10px; }
+.pos { position: absolute; left: 12px; bottom: 10px; color: #fff; background: rgba(0,0,0,.6); font-size: 13px; padding: 2px 8px; border-radius: 3px; font-variant-numeric: tabular-nums; }
+.thumbs { display: flex; gap: 6px; overflow-x: auto; padding: 8px; scrollbar-width: thin; }
+.thumbs button { flex: none; width: 74px; height: 56px; padding: 0; border: 2px solid transparent; border-radius: 3px; overflow: hidden; cursor: pointer; background: #222; opacity: .6; }
+.thumbs button[aria-current="true"] { border-color: #fff; opacity: 1; }
+.thumbs img { width: 100%; height: 100%; object-fit: cover; }
+.detail { padding: 24px 26px 28px; display: grid; gap: 18px; align-content: start; min-width: 0; }
+@media (min-width: 861px) { .detail { overflow-y: auto; max-height: min(780px, 92dvh); } }
+.close {
+  position: absolute; top: 10px; right: 10px; z-index: 2; width: 42px; height: 42px; border-radius: 50%;
+  border: 0; background: rgba(0,0,0,.65); color: #fff; font-size: 28px; line-height: 1; cursor: pointer; display: grid; place-items: center;
+}
+.close:focus-visible { outline: 3px solid #fff; }
+.detail .model { font-size: 26px; }
+.sticker { border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.sticker h4 { margin: 0; padding: 7px 12px; background: var(--brand); color: var(--brand-ink); font-family: var(--display); font-weight: 600; font-size: 11px; letter-spacing: .24em; text-transform: uppercase; }
+.sticker dl { margin: 0; display: grid; grid-template-columns: auto 1fr; }
+.sticker dt, .sticker dd { margin: 0; padding: 7px 12px; border-top: 1px solid var(--line); font-size: 15px; }
+.sticker dt:first-of-type, .sticker dd:first-of-type { border-top: 0; }
+.sticker dt { color: var(--muted); }
+.sticker dd { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.desc { white-space: pre-line; margin: 0; font-size: 16px; }
+.cta { display: grid; gap: 10px; }
+.call { display: block; text-align: center; background: var(--action); color: var(--action-ink); text-decoration: none; font-family: var(--display); font-weight: 700; font-size: 17px; letter-spacing: .04em; padding: 13px; border-radius: 4px; }
+.cta small { color: var(--muted); text-align: center; }
+
+footer { background: var(--brand); color: var(--brand-ink); font-size: 14px; padding-block: 24px 30px; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; align-items: center; }
+footer .caps { font-size: 11px; letter-spacing: .24em; }
+footer span { opacity: .8; }
+
+@media (prefers-reduced-motion: reduce) { .car { transition: none; } .car:hover { transform: none; } }
+</style>
+</head>
+<body>
+
+<header class="dealer">
+  <div class="wrap">
+    <h1 class="logo" aria-label="Triumph Motor Company"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1947 485"><path fill="currentColor" fill-rule="evenodd" d="M34.0 480.8C32.9 478.4 28.5 468.4 24.2 458.6C19.9 448.7 16.0 440.5 15.5 440.3C14.9 440.1 14.6 448.1 14.8 461.5L15.1 483.0L8.5 483.0L2.0 483.0L2.0 445.1L2.0 407.1L7.5 406.5C10.6 406.1 13.3 405.9 13.5 406.1C14.2 406.9 22.4 425.0 30.7 444.0C35.3 454.7 39.6 463.9 40.1 464.4C40.6 465.0 42.0 463.0 43.6 459.4C45.0 456.2 46.8 452.1 47.5 450.5C48.7 447.8 62.8 412.0 64.3 407.8C64.8 406.4 66.1 406.0 69.9 406.0C78.7 406.0 78.0 402.5 78.0 445.1L78.0 483.0L70.9 483.0L63.9 483.0L64.1 462.2C64.1 450.8 63.9 441.4 63.4 441.2C63.0 441.0 58.9 449.8 54.4 460.7C49.9 471.6 45.8 481.4 45.3 482.5C44.7 484.0 43.4 484.6 40.3 484.8C36.2 485.1 36.0 485.0 34.0 480.8ZM196.6 483.3C177.4 477.5 165.7 454.4 171.5 433.8C173.9 425.2 175.4 422.5 181.7 415.9C193.2 403.8 210.5 400.7 223.9 408.3C228.9 411.1 236.6 418.7 239.6 423.7C247.8 437.7 246.2 458.0 235.8 471.1C226.6 482.8 210.8 487.7 196.6 483.3ZM503.3 483.1C476.7 473.9 468.8 438.2 488.4 416.3C504.3 398.7 531.3 400.7 545.0 420.6C553.6 432.9 554.3 453.3 546.7 466.3C537.6 481.7 519.4 488.7 503.3 483.1ZM929.0 484.0C928.2 483.5 925.8 482.3 923.8 481.4C915.9 478.0 908.1 467.9 905.4 457.8C903.6 451.1 903.6 439.0 905.4 432.4C909.6 416.7 921.1 406.2 936.2 404.4C942.1 403.7 950.1 405.1 955.5 407.7C959.6 409.8 966.0 416.0 966.0 418.1C966.0 419.0 964.6 421.6 962.9 424.0L959.8 428.2L957.2 425.8C951.5 420.6 947.9 418.8 942.1 418.3C934.6 417.6 930.1 419.1 925.2 424.0C914.8 434.4 915.8 458.1 927.0 467.1C935.2 473.7 945.0 473.2 954.8 465.9C957.7 463.7 960.4 462.1 960.9 462.4C961.3 462.7 962.9 464.8 964.5 467.0L967.3 471.1L963.4 475.1C957.0 481.7 950.2 484.4 939.5 484.6C934.5 484.7 929.8 484.4 929.0 484.0ZM1081.3 483.1C1058.8 475.4 1048.6 447.4 1060.0 425.0C1062.9 419.4 1070.3 411.7 1075.7 408.8C1090.1 400.9 1105.9 403.3 1118.2 415.2C1132.2 428.8 1134.0 453.9 1122.2 469.5C1112.1 482.9 1096.0 488.2 1081.3 483.1ZM1256.2 482.8C1254.9 480.3 1248.5 465.7 1241.7 449.8C1239.5 444.4 1237.2 440.0 1236.8 440.0C1236.4 440.0 1236.0 449.7 1236.0 461.5L1236.0 483.0L1229.5 483.0L1223.0 483.0L1223.0 445.5C1223.0 403.3 1222.3 406.6 1230.9 406.5L1235.2 406.5L1242.7 423.0C1246.8 432.1 1252.6 445.1 1255.5 452.0C1258.4 458.8 1261.3 464.6 1261.8 464.8C1262.6 465.0 1271.1 445.3 1281.2 419.5C1283.6 413.4 1285.9 407.9 1286.3 407.2C1287.4 405.6 1296.1 405.6 1298.4 407.3C1300.0 408.5 1300.1 409.7 1299.6 417.6C1299.3 422.5 1299.1 439.2 1299.0 454.8L1299.0 483.0L1291.8 483.0L1284.7 483.0L1285.3 461.5C1285.7 449.7 1285.6 440.0 1285.1 440.0C1284.2 440.0 1283.0 442.8 1274.3 464.0C1265.0 487.0 1266.2 485.0 1261.5 485.0C1258.2 485.0 1257.1 484.5 1256.2 482.8ZM355.3 461.1C355.7 449.1 355.7 434.5 355.3 428.6L354.7 418.0L344.3 418.0L333.9 418.0L334.6 412.8C335.0 409.9 335.6 407.2 335.9 406.7C336.3 406.3 342.4 406.5 349.5 407.2C359.4 408.1 365.2 408.1 375.2 407.1C382.3 406.5 388.4 406.1 388.8 406.4C389.2 406.6 389.5 409.2 389.5 412.2L389.5 417.5L379.1 417.8L368.7 418.1L369.3 450.5L369.8 483.0L362.2 483.0L354.7 483.0L355.3 461.1ZM645.0 445.1C645.0 424.2 645.4 406.9 645.9 406.6C646.3 406.3 654.8 406.0 664.6 405.9C684.1 405.7 687.9 406.4 694.8 411.7C705.1 419.5 705.0 441.3 694.6 449.6C692.6 451.2 691.0 453.0 691.0 453.6C691.0 454.3 693.9 460.9 697.5 468.4C701.1 475.9 704.0 482.2 704.0 482.5C704.0 482.8 700.5 483.0 696.1 483.0L688.3 483.0L685.7 477.2C684.3 474.1 682.2 469.0 680.9 466.0C677.2 457.0 675.9 456.0 667.5 456.0C663.3 456.0 659.9 456.5 659.2 457.2C658.4 458.0 658.0 462.5 658.0 470.7L658.0 483.0L651.5 483.0L645.0 483.0L645.0 445.1ZM1396.0 444.5L1396.0 406.0L1415.8 406.0C1437.8 406.0 1441.8 406.8 1448.2 412.0C1450.2 413.7 1453.1 417.6 1454.7 420.8C1457.1 425.8 1457.5 427.6 1457.4 435.0C1457.3 444.9 1455.2 450.5 1449.2 456.2C1443.6 461.6 1437.7 463.2 1424.0 463.0C1409.0 462.7 1410.0 462.4 1410.0 466.9C1410.0 469.0 1409.7 473.5 1409.4 476.9L1408.7 483.0L1402.4 483.0L1396.0 483.0L1396.0 444.5ZM1545.0 482.0C1545.0 481.4 1546.3 477.5 1547.9 473.2C1549.5 469.0 1552.0 462.1 1553.5 458.0C1557.7 446.5 1573.2 407.6 1574.0 406.6C1574.5 406.2 1577.7 405.8 1581.1 405.7L1587.5 405.6L1592.8 419.1C1595.8 426.4 1598.6 433.4 1599.1 434.5C1599.7 436.1 1615.8 476.7 1617.7 481.8C1618.1 482.7 1616.3 483.0 1610.7 483.0L1603.2 483.0L1601.4 478.2C1600.5 475.6 1599.1 472.0 1598.4 470.2L1597.1 467.0L1581.0 467.0L1564.9 467.0L1563.6 470.2C1562.9 472.0 1561.5 475.6 1560.6 478.2L1558.8 483.0L1551.9 483.0C1547.8 483.0 1545.0 482.6 1545.0 482.0ZM1707.0 444.5L1707.0 406.0L1713.2 406.0L1719.5 406.0L1730.1 420.3C1752.7 450.5 1760.2 460.0 1761.2 460.0C1761.8 460.0 1761.9 451.1 1761.4 433.0L1760.7 405.9L1767.6 406.2L1774.5 406.5L1774.8 444.8L1775.0 483.0L1768.3 482.9L1761.5 482.9L1754.6 473.7C1731.4 442.8 1720.7 429.0 1719.8 429.0C1719.1 429.0 1719.0 438.4 1719.5 456.0L1720.2 483.0L1713.6 483.0L1707.0 483.0L1707.0 444.5ZM1890.5 472.8L1891.2 462.5L1887.6 457.9C1885.7 455.3 1880.2 447.9 1875.5 441.5L1867.0 429.8L1867.0 417.9L1867.0 405.9L1874.1 406.2L1881.3 406.5L1881.1 416.2C1881.0 422.1 1881.4 426.8 1882.1 428.2C1883.3 430.7 1890.6 440.4 1895.2 445.8L1898.0 449.0L1900.7 445.9C1902.3 444.2 1906.1 439.2 1909.3 434.7L1915.2 426.5L1914.8 416.5L1914.5 406.5L1921.8 406.2L1929.0 405.9L1929.0 417.5L1929.0 429.1L1925.4 434.8C1923.4 437.9 1917.9 445.5 1913.3 451.6L1904.9 462.8L1905.1 472.6L1905.3 482.5L1897.5 482.8L1889.8 483.1L1890.5 472.8ZM218.9 468.2C227.5 463.0 232.9 451.2 231.4 441.1C230.4 434.6 228.5 430.6 224.2 425.8C209.1 409.0 183.6 420.7 183.5 444.5C183.5 456.4 189.5 466.0 199.6 470.0C206.0 472.6 212.8 472.0 218.9 468.2ZM521.4 470.8C527.1 469.1 535.2 460.9 537.3 454.6C540.9 444.0 538.5 432.7 531.0 425.0C521.6 415.3 506.9 415.6 498.1 425.5C492.9 431.4 491.0 436.5 491.0 444.5C491.0 462.6 505.8 475.4 521.4 470.8ZM1099.4 470.8C1108.6 468.1 1117.0 455.6 1117.0 444.6C1117.0 435.5 1111.9 425.9 1104.8 421.4C1098.9 417.6 1089.1 416.9 1083.4 419.8C1074.2 424.6 1069.1 433.4 1069.0 444.5C1069.0 462.7 1083.7 475.4 1099.4 470.8ZM1590.9 454.1C1592.1 453.3 1591.4 450.7 1586.9 438.9C1583.9 431.1 1581.0 424.5 1580.5 424.3C1579.9 424.2 1578.0 428.2 1576.2 433.3C1574.4 438.3 1572.0 444.7 1570.9 447.4C1568.2 454.3 1569.1 455.0 1580.4 455.0C1585.4 455.0 1590.1 454.6 1590.9 454.1ZM1436.7 449.0C1441.2 446.3 1443.3 441.7 1443.2 434.9C1443.2 428.2 1441.2 424.0 1436.8 420.8C1433.8 418.7 1432.4 418.5 1422.2 418.4C1411.1 418.4 1410.8 418.4 1409.9 420.7C1408.9 423.5 1408.7 438.0 1409.6 445.8L1410.3 451.0L1421.9 451.0C1431.6 451.0 1434.0 450.7 1436.7 449.0ZM680.1 443.9C686.1 442.1 688.5 438.8 688.5 432.6C688.5 426.6 686.8 422.8 683.2 420.4C679.9 418.2 661.7 417.1 659.5 419.0C657.6 420.6 657.3 441.9 659.2 443.8C660.8 445.4 675.0 445.4 680.1 443.9ZM1353.3 365.7C1353.7 364.6 1359.0 348.1 1360.5 343.3L1361.1 341.0L681.8 340.8L2.5 340.5L2.2 325.2L1.9 310.0L686.4 310.0L1370.9 310.0L1373.5 301.2C1375.0 296.4 1377.2 289.2 1378.6 285.1C1379.9 281.0 1380.8 277.5 1380.6 277.3C1380.4 277.1 1379.0 278.0 1377.4 279.3C1367.1 287.9 1354.7 289.3 1296.5 288.8C1256.9 288.5 1256.5 288.5 1252.0 286.2C1245.2 282.6 1239.3 276.3 1237.0 270.2C1234.4 263.4 1234.5 262.3 1237.6 252.1C1240.8 241.4 1248.1 218.0 1248.8 216.1C1249.2 215.1 1248.9 214.8 1247.7 215.3C1246.9 215.6 1230.2 229.1 1210.8 245.2C1171.2 278.2 1168.3 280.4 1158.5 285.3C1145.3 291.9 1135.1 293.5 1124.2 290.6C1111.8 287.3 1106.4 278.2 1108.9 264.7C1109.4 261.7 1113.7 249.3 1118.3 237.3C1122.9 225.3 1126.4 215.4 1125.9 215.2C1125.5 215.0 1119.6 219.5 1112.8 225.1C1106.0 230.8 1097.3 238.0 1093.5 241.1C1089.7 244.3 1076.9 254.8 1065.1 264.5C1053.4 274.2 1041.6 283.2 1038.9 284.5C1035.6 286.2 1031.1 287.3 1024.8 288.0C1013.6 289.2 982.0 289.3 980.2 288.2C979.2 287.5 979.6 285.4 981.9 278.4C983.5 273.5 984.7 269.4 984.5 269.2C984.4 269.0 981.8 271.4 978.9 274.5C971.5 282.3 962.0 286.8 950.3 288.0C938.9 289.2 868.6 289.2 855.3 288.0C844.3 287.0 839.4 285.2 834.9 280.3C833.4 278.8 831.9 276.0 831.5 274.2C831.1 272.5 830.6 271.0 830.3 271.0C830.0 271.0 827.7 272.8 825.2 275.1C819.5 280.1 811.0 284.5 802.7 286.7C797.7 288.1 791.5 288.4 770.0 288.5C746.4 288.5 742.9 288.3 737.6 286.6C728.2 283.5 721.3 277.4 718.7 269.9C718.0 268.0 717.1 266.3 716.7 266.2C716.3 266.0 714.5 267.9 712.7 270.2C705.0 280.2 692.3 286.5 676.8 288.0C664.8 289.2 597.3 289.2 585.4 288.1C576.1 287.2 571.4 285.5 567.2 281.6C564.1 278.9 561.0 272.8 561.0 269.5C561.0 266.5 558.4 266.1 557.5 269.0C556.4 272.4 547.8 279.2 539.3 283.2C527.6 288.7 519.1 289.4 469.0 288.7C425.1 288.1 422.5 287.8 415.1 282.3C410.3 278.7 407.0 271.0 407.0 263.4C407.0 257.0 407.5 255.1 415.0 231.0C425.4 197.8 429.3 185.5 429.8 184.2C430.1 183.2 425.9 183.0 409.4 183.2L388.5 183.5L378.7 208.5C373.4 222.2 368.7 234.2 368.4 235.0C361.9 251.7 356.1 255.0 333.2 255.0L319.9 255.0L320.5 252.8C320.9 251.5 322.7 246.4 324.5 241.5C326.4 236.6 331.3 223.1 335.5 211.5C339.7 199.9 343.8 188.8 344.6 186.7C346.0 183.0 346.0 182.9 343.3 181.9C333.5 178.4 325.3 171.1 321.2 162.2C318.9 157.2 318.5 155.3 318.5 146.0C318.5 136.7 318.8 134.9 321.2 129.8C324.5 122.6 328.2 118.0 334.0 113.7C342.9 107.0 351.8 103.0 363.6 100.5C371.8 98.8 417.5 98.3 416.5 100.0C415.7 101.3 400.0 147.2 400.0 148.2C400.0 148.7 424.5 149.0 454.5 149.0C484.5 149.0 509.0 149.1 509.0 149.3C509.0 149.7 507.4 155.0 503.5 167.0C500.0 177.9 498.1 184.0 492.6 201.8C491.3 206.0 487.0 219.5 483.1 231.6C479.2 243.8 476.0 254.1 476.0 254.4C476.0 254.7 495.2 254.9 518.7 254.8L561.3 254.5L564.6 244.5C568.5 232.5 573.3 217.3 579.0 199.0C581.3 191.6 584.7 180.8 586.5 175.0C588.4 169.2 591.0 161.1 592.3 157.0L594.7 149.5L631.9 149.2C667.2 149.0 669.2 149.1 668.5 150.7C668.1 151.7 666.7 156.0 665.4 160.2C664.1 164.5 661.9 171.6 660.5 176.0C659.1 180.4 656.9 187.6 655.5 192.0C654.1 196.4 651.9 203.5 650.6 207.7C649.3 212.0 646.5 220.7 644.5 227.0C640.5 239.4 636.0 254.2 636.0 254.7C636.0 254.9 654.1 255.0 676.3 255.0L716.6 255.0L718.2 248.8C719.6 243.1 724.7 228.6 734.5 202.5C736.3 197.6 741.4 183.6 745.8 171.5L753.8 149.5L790.9 149.2C811.3 149.1 828.0 149.3 828.0 149.7C828.0 150.4 814.7 187.9 806.1 211.5C798.4 232.7 791.0 253.5 791.0 254.2C791.0 254.6 800.2 255.0 811.4 255.0L831.8 255.0L833.5 250.2C834.5 247.6 836.7 241.4 838.5 236.5C840.3 231.6 843.0 224.2 844.4 220.2C854.4 192.4 855.6 189.0 863.0 168.5C866.4 159.2 869.3 150.9 869.5 150.2C869.8 149.3 878.1 149.0 906.5 149.0C945.9 149.0 944.3 148.8 942.1 154.2C941.5 155.5 939.2 161.9 937.0 168.5C934.7 175.1 932.0 182.8 931.0 185.5C930.0 188.2 927.3 195.9 925.0 202.5C922.7 209.1 919.8 217.4 918.5 221.0C911.7 239.8 907.0 253.4 907.0 254.1C907.0 254.6 924.8 254.9 948.2 254.8L989.4 254.5L990.6 250.5C992.1 245.6 1011.3 184.0 1017.7 163.8L1022.4 149.0L1058.7 149.0C1078.7 149.0 1095.0 149.3 1095.0 149.8C1095.0 150.2 1093.7 154.6 1092.1 159.5C1090.5 164.4 1086.8 175.9 1084.0 185.0C1081.1 194.1 1077.7 204.9 1076.4 209.0C1075.1 213.1 1074.0 216.8 1074.0 217.2C1074.0 217.6 1088.2 206.2 1105.5 191.7C1139.8 163.2 1147.4 157.4 1156.4 152.8C1168.6 146.6 1183.0 143.5 1196.1 144.2C1206.5 144.7 1212.9 147.4 1216.2 152.8C1219.4 158.0 1219.2 168.1 1215.7 177.0C1209.5 192.5 1202.9 211.2 1203.4 211.7C1203.6 212.0 1208.5 208.2 1214.3 203.3C1264.4 160.7 1269.3 156.9 1280.5 151.5C1301.4 141.4 1326.6 141.6 1334.0 152.1C1335.2 153.6 1336.6 157.4 1337.3 160.5C1338.7 167.3 1337.1 175.5 1331.5 190.5C1327.8 200.4 1326.7 203.5 1319.2 224.5C1317.0 230.6 1313.6 239.6 1311.7 244.7C1309.8 249.8 1308.5 254.2 1308.8 254.5C1309.1 254.8 1327.0 255.0 1348.6 255.0L1387.9 255.0L1392.0 241.8C1394.3 234.5 1396.5 227.4 1397.0 226.0C1397.5 224.6 1399.7 217.4 1402.0 210.0C1404.3 202.6 1407.7 191.8 1409.5 186.0C1418.3 158.1 1427.1 129.9 1433.5 108.7C1434.8 104.5 1436.2 100.5 1436.5 100.0C1436.9 99.4 1450.8 99.0 1473.4 99.0L1509.7 99.0L1501.4 123.8C1496.8 137.4 1493.0 148.5 1493.0 148.6C1493.0 148.7 1502.6 149.0 1514.2 149.3C1556.6 150.5 1571.5 154.2 1585.0 166.7C1595.0 175.9 1599.8 190.9 1597.1 204.7C1594.8 216.3 1586.3 230.9 1576.6 239.8C1570.7 245.2 1560.3 252.0 1556.8 252.7C1547.7 254.5 1559.3 255.0 1607.2 254.8L1660.4 254.5L1663.1 245.5C1664.6 240.6 1667.0 232.8 1668.4 228.2C1669.8 223.7 1672.1 216.4 1673.5 212.0C1674.9 207.6 1677.1 200.4 1678.5 196.0C1679.9 191.6 1682.1 184.4 1683.5 180.0C1684.9 175.6 1687.1 168.4 1688.5 164.0C1689.9 159.6 1692.1 152.4 1693.5 148.0C1694.9 143.6 1697.1 136.4 1698.5 132.0C1699.9 127.6 1702.1 120.4 1703.5 116.0C1704.9 111.6 1707.1 104.5 1708.4 100.2C1709.8 96.0 1712.9 86.0 1715.3 78.0C1724.8 47.6 1726.5 42.5 1727.5 41.8C1728.7 40.9 1798.4 40.7 1799.2 41.6C1799.5 41.9 1799.0 44.4 1798.0 47.3C1797.0 50.2 1794.3 58.6 1792.0 66.0C1789.7 73.4 1787.5 80.6 1787.0 82.0C1786.5 83.4 1784.3 90.6 1782.0 98.0C1779.7 105.4 1777.5 112.6 1777.0 114.0C1776.5 115.4 1774.3 122.6 1772.0 130.0C1769.7 137.4 1767.0 146.0 1766.0 149.0C1765.0 152.0 1762.3 160.6 1760.0 168.0C1757.7 175.4 1755.5 182.6 1755.0 184.0C1754.5 185.4 1752.3 192.6 1750.0 200.0C1747.8 207.4 1745.5 214.6 1744.9 215.9C1744.4 217.2 1744.1 218.5 1744.4 218.7C1744.7 219.0 1749.8 215.0 1755.7 209.9C1761.6 204.8 1773.0 194.9 1781.0 188.1C1789.0 181.2 1798.7 172.8 1802.5 169.5C1819.3 155.0 1831.2 148.7 1847.8 145.4C1856.6 143.7 1868.2 143.7 1872.8 145.3C1885.1 149.8 1887.1 162.9 1879.2 186.5C1873.2 204.4 1857.0 254.0 1857.0 254.5C1857.0 254.8 1875.9 255.0 1899.0 255.0C1922.1 255.0 1941.0 255.3 1941.0 255.6C1941.0 255.9 1939.4 259.3 1937.4 263.1C1931.2 274.9 1920.6 282.8 1906.1 286.5C1901.1 287.8 1892.0 288.0 1846.3 287.8C1794.3 287.5 1792.4 287.4 1789.0 285.5C1784.0 282.5 1781.5 277.7 1781.6 271.0C1781.8 264.3 1782.4 261.9 1793.4 227.1C1795.4 220.8 1796.9 215.3 1796.8 214.9C1796.6 214.5 1778.3 229.2 1756.0 247.6C1708.6 286.8 1708.3 286.9 1691.0 288.1C1675.0 289.2 1651.2 289.2 1650.6 288.1C1650.3 287.6 1651.1 283.8 1652.5 279.6C1653.9 275.4 1655.0 271.5 1655.0 270.9C1655.0 270.3 1653.0 271.9 1650.6 274.3C1645.6 279.5 1636.8 284.3 1627.7 286.8C1622.1 288.3 1615.0 288.5 1558.5 288.5C1510.3 288.5 1494.5 288.2 1491.3 287.2C1482.9 284.7 1477.3 277.3 1476.3 267.5L1475.7 262.2L1484.1 259.1C1501.6 252.4 1509.6 247.1 1516.1 238.1C1523.2 228.2 1526.2 211.5 1522.5 202.6C1518.7 193.6 1503.7 184.4 1491.2 183.3L1484.4 182.7L1479.6 198.1C1476.9 206.6 1474.2 215.3 1473.5 217.5C1472.8 219.7 1469.9 228.9 1467.0 238.0C1464.2 247.1 1460.4 259.2 1458.5 265.0C1456.7 270.8 1453.3 281.6 1451.0 289.0C1448.8 296.4 1446.5 303.5 1446.0 304.8C1445.4 306.1 1445.0 307.7 1445.0 308.5C1445.0 309.8 1477.2 310.0 1696.0 310.0L1947.0 310.0L1947.0 325.5L1947.0 341.0L1691.0 341.0L1435.0 341.0L1434.0 343.2C1433.5 344.5 1431.6 350.3 1429.8 356.2L1426.6 367.0L1389.7 367.0C1360.5 367.0 1352.9 366.7 1353.3 365.7ZM20.0 287.5C20.0 287.2 22.2 282.1 24.8 276.1C33.0 257.8 41.0 247.6 51.0 242.5C57.2 239.3 64.8 239.5 90.5 243.5C103.7 245.5 117.2 247.6 120.5 248.1C123.8 248.6 131.0 249.7 136.5 250.5C142.0 251.4 149.6 252.5 153.4 253.0C157.1 253.6 160.6 254.2 161.0 254.5C162.2 255.2 165.0 254.0 165.0 252.8C165.0 252.0 174.2 225.7 184.5 197.0C185.8 193.4 188.7 185.1 191.0 178.5C193.3 171.9 196.2 163.6 197.5 160.0C198.8 156.4 203.7 142.5 208.5 129.0C213.3 115.5 218.2 101.6 219.5 98.0C220.8 94.4 223.5 86.8 225.5 81.0C230.2 67.4 233.9 57.1 235.0 54.2L236.0 52.0L171.7 52.1C136.4 52.1 105.5 52.5 103.0 53.0C100.5 53.5 97.2 54.2 95.5 54.5C93.8 54.9 87.8 57.4 82.1 60.2C73.3 64.4 70.5 66.4 63.4 73.4C53.7 83.0 49.9 90.0 48.0 102.1C46.2 113.0 47.8 120.2 53.2 125.2C55.3 127.3 57.4 129.0 57.8 129.0C58.2 129.0 60.4 125.1 62.5 120.2C65.7 113.0 67.8 110.2 74.0 103.9C85.5 92.3 98.6 87.0 115.1 87.0C131.9 87.0 144.0 91.9 154.2 102.8C164.9 114.3 169.5 128.4 167.3 143.4C165.9 153.5 161.9 161.2 154.0 169.0C143.2 179.9 131.5 184.8 110.7 187.2C91.7 189.5 67.3 184.8 51.4 176.0C25.5 161.5 11.8 139.8 10.3 110.8C8.8 82.2 18.5 58.4 40.2 37.4C58.6 19.6 77.2 10.0 106.5 3.3L118.5 0.5L265.8 0.2C346.7 0.1 413.0 0.3 413.0 0.7C413.0 1.2 412.4 2.4 411.7 3.5C410.4 5.3 405.4 14.8 391.4 41.5L386.1 51.5L348.0 51.8L309.9 52.0L309.0 54.3C307.5 58.1 303.4 69.5 294.5 95.0C289.7 108.5 284.8 122.5 283.4 126.2C282.1 130.0 279.9 136.0 278.6 139.8C277.2 143.5 272.3 157.5 267.5 171.0C262.7 184.5 257.8 198.5 256.4 202.2C255.1 206.0 252.8 212.3 251.4 216.2C242.3 242.1 235.2 254.7 223.8 266.0C216.5 273.2 209.2 277.9 199.9 281.7C185.2 287.6 190.5 287.3 101.8 287.7C56.8 287.9 20.0 287.8 20.0 287.5ZM632.1 112.4C618.6 109.5 604.3 99.8 597.7 89.3C586.5 71.6 589.1 48.5 603.7 33.4C621.6 15.0 649.0 11.1 674.0 23.3C679.7 26.1 692.1 38.2 694.9 43.7C701.7 57.3 701.5 74.0 694.2 87.3C692.8 90.0 688.5 95.0 684.8 98.5C670.5 111.7 651.7 116.7 632.1 112.4Z"/></svg></h1>
+    <a class="addr caps" href="https://www.google.com/maps/search/?api=1&query=7160+Canyon+Dr+Ste+100+Amarillo+TX+79109" target="_blank" rel="noopener"><span class="dash">—</span> 7160 Canyon Dr, Ste. 100, <span class="nw">Amarillo, TX 79109 <span class="dash">—</span></span></a>
+    <a class="phone" href="tel:+18065847474">(806) 584-7474</a>
+  </div>
+  <div class="perks">
+    <ul class="wrap caps">
+      <li>Cash or bank financing</li>
+      <li>Se habla español</li>
+      <li>Call or text to see any car</li>
+    </ul>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="bar">
+    <h2 class="caps">On the lot <span id="total"></span></h2>
+    <label for="sort">Sort
+      <select id="sort">
+        <option value="new">Newest first</option>
+        <option value="low">Price: low to high</option>
+        <option value="high">Price: high to low</option>
+        <option value="miles">Lowest miles</option>
+      </select>
+    </label>
+  </div>
+  <div class="grid" id="grid" aria-live="polite"></div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="caps">Triumph Motor Company · 7160 Canyon Dr, Ste. 100 · Amarillo, TX</span>
+    <span id="updated"></span>
+  </div>
+</footer>
+
+<dialog id="sheet" aria-label="Vehicle details"></dialog>
+
+<script>
+const PHONE_DISPLAY = '(806) 584-7474';
+const PHONE_TEL = '+18065847474';
+let cars = [];
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const money = n => n == null ? 'Call' : '$' + Number(n).toLocaleString('en-US');
+const miles = n => n == null ? null : Number(n).toLocaleString('en-US');
+const cap = s => s ? s.replace(/\b\w/g, c => c.toUpperCase()) : '';
+const ownersText = n => n == null ? null : n === 1 ? '1 owner' : `${n} owners`;
+
+function heading(c) {
+  const name = [c.make, c.model].filter(Boolean).join(' ') || (c.title || '').replace(/^\d{4}\s*/, '');
+  return { year: c.year || '', name: cap(name), trim: c.trim || '' };
+}
+function isNew(c) {
+  const t = Date.parse(c.listedAt || c.firstSeen || '');
+  return t && Date.now() - t < 7 * 864e5;
+}
+
+function render() {
+  const sort = $('#sort').value;
+  const list = [...cars].sort((a, b) =>
+    sort === 'low' ? (a.price ?? 1e9) - (b.price ?? 1e9) :
+    sort === 'high' ? (b.price ?? 0) - (a.price ?? 0) :
+    sort === 'miles' ? (a.mileage ?? 1e9) - (b.mileage ?? 1e9) :
+    (b.listedAt || '').localeCompare(a.listedAt || ''));
+  $('#total').textContent = cars.length ? `· ${cars.length} ${cars.length === 1 ? 'vehicle' : 'vehicles'}` : '';
+  if (!list.length) {
+    $('#grid').innerHTML = `<div class="empty"><h3>New inventory coming soon</h3>
+      <p>Call or text <strong>${PHONE_DISPLAY}</strong> to ask what just came in.</p></div>`;
+    return;
+  }
+  $('#grid').innerHTML = list.map(c => {
+    const h = heading(c);
+    const flag = c.pending ? '<span class="flag">Sale pending</span>' : isNew(c) ? '<span class="flag new">Just listed</span>' : '';
+    const specs = [
+      c.mileage != null && `<span><b>${miles(c.mileage)}</b> mi</span>`,
+      c.transmission && `<span>${esc(c.transmission)}</span>`,
+      c.exteriorColor && `<span>${esc(c.exteriorColor)}</span>`,
+    ].filter(Boolean).join('');
+    return `<button class="car" data-id="${esc(c.id)}" aria-label="${esc(`${h.year} ${h.name}, ${money(c.price)}`)}">
+      <div class="shot">
+        ${c.photos?.[0] ? `<img src="${esc(c.photos[0])}" alt="" loading="lazy">` : ''}
+        ${flag}
+        ${c.photos?.length > 1 ? `<span class="count">${c.photos.length} photos</span>` : ''}
+      </div>
+      <div class="info">
+        <div class="top">
+          <div class="name">
+            <div class="year">${esc(h.year)}</div>
+            <h3 class="model">${esc(h.name)}</h3>
+            ${h.trim ? `<div class="trim">${esc(h.trim)}</div>` : ''}
+          </div>
+          <div class="price">${money(c.price)}</div>
+        </div>
+        <div class="specs">${specs}</div>
+      </div>
+    </button>`;
+  }).join('');
+}
+
+function openCar(id) {
+  const c = cars.find(x => x.id === id);
+  if (!c) return;
+  const h = heading(c);
+  const photos = c.photos || [];
+  const rows = [
+    ['Price', money(c.price)],
+    ['Mileage', c.mileage != null ? `${miles(c.mileage)} mi` : null],
+    ['Transmission', c.transmission],
+    ['Fuel', c.fuel],
+    ['Exterior', c.exteriorColor],
+    ['Interior', c.interiorColor],
+    ['Owners', ownersText(c.owners)],
+    ['Title', c.titleStatus],
+    ['Paid off', c.paidOff ? 'Yes' : null],
+    ['VIN', c.vin],
+  ].filter(r => r[1]);
+  const sheet = $('#sheet');
+  sheet.innerHTML = `<div class="sheet">
+    <div class="gallery">
+      <div class="stage">
+        ${photos.length ? `<img id="big" src="${esc(photos[0])}" alt="${esc(`${h.year} ${h.name}`)}">` : ''}
+        ${photos.length > 1 ? `<button class="nav prev" aria-label="Previous photo">‹</button><button class="nav next" aria-label="Next photo">›</button>
+        <span class="pos" id="pos">1 / ${photos.length}</span>` : ''}
+      </div>
+      ${photos.length > 1 ? `<div class="thumbs">${photos.map((p, i) =>
+        `<button data-i="${i}" aria-label="Photo ${i + 1}" aria-current="${i === 0}"><img src="${esc(p)}" alt="" loading="lazy"></button>`).join('')}</div>` : ''}
+    </div>
+    <div class="detail">
+      <button class="close" aria-label="Close">×</button>
+      <div>
+        <div class="year">${esc(h.year)}</div>
+        <h3 class="model">${esc(h.name)}</h3>
+        ${h.trim ? `<div class="trim">${esc(h.trim)}</div>` : ''}
+      </div>
+      <div class="sticker"><h4>Vehicle info</h4><dl>${rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl></div>
+      ${c.description ? `<p class="desc">${esc(c.description)}</p>` : ''}
+      <div class="cta">
+        <a class="call" href="tel:${PHONE_TEL}">Call or text ${PHONE_DISPLAY}</a>
+        <small>Ask about the ${esc(`${h.year} ${h.name}`)} · <a href="${esc(c.fbUrl)}" target="_blank" rel="noopener">Message on Facebook</a></small>
+      </div>
+    </div>
+  </div>`;
+  let i = 0;
+  const show = n => {
+    if (!photos.length) return;
+    i = (n + photos.length) % photos.length;
+    sheet.querySelector('#big').src = photos[i];
+    const pos = sheet.querySelector('#pos'); if (pos) pos.textContent = `${i + 1} / ${photos.length}`;
+    sheet.querySelectorAll('.thumbs button').forEach((b, k) => b.setAttribute('aria-current', k === i));
+    sheet.querySelector(`.thumbs button[data-i="${i}"]`)?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  };
+  sheet.querySelector('.prev')?.addEventListener('click', () => show(i - 1));
+  sheet.querySelector('.next')?.addEventListener('click', () => show(i + 1));
+  sheet.querySelectorAll('.thumbs button').forEach(b => b.addEventListener('click', () => show(+b.dataset.i)));
+  sheet.querySelector('.close').addEventListener('click', () => sheet.close());
+  sheet.onkeydown = e => { if (e.key === 'ArrowLeft') show(i - 1); if (e.key === 'ArrowRight') show(i + 1); };
+  let x0 = null;
+  const stage = sheet.querySelector('.stage');
+  stage.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  stage.addEventListener('touchend', e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) show(i + (dx < 0 ? 1 : -1)); x0 = null; });
+  sheet.showModal();
+  history.replaceState(null, '', '#car-' + c.id);
+}
+
+$('#sheet').addEventListener('close', () => history.replaceState(null, '', location.pathname));
+$('#sheet').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+$('#grid').addEventListener('click', e => { const b = e.target.closest('.car'); if (b) openCar(b.dataset.id); });
+$('#sort').addEventListener('change', render);
+
+function load(data) {
+  cars = (data.cars || []).filter(c => !c.sold);
+  if (data.updatedAt) $('#updated').textContent = 'Inventory updated ' + new Date(data.updatedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  render();
+  const m = location.hash.match(/^#car-(\d+)$/);
+  if (m) openCar(m[1]);
+}
+
+if (window.INVENTORY) load(window.INVENTORY);
+else fetch('data/inventory.json', { cache: 'no-cache' }).then(r => r.json()).then(load).catch(() => load({ cars: [] }));
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+# Backup way to add a car: paste its Facebook Marketplace link on its own line
+# below, then click "Commit changes". The site picks it up within a few minutes.
+# (Normally you don't need this — the scraper finds Dad's listings by itself.)
+# You can leave links here after a car sells; sold listings are removed automatically.
+
+https://www.facebook.com/marketplace/item/1864474261207802/

@@ -1,0 +1,7 @@
+{
+  "name": "triumph-motor-co",
+  "private": true,
+  "type": "module",
+  "scripts": { "scrape": "node scraper/scrape.mjs" },
+  "dependencies": { "playwright": "1.47.2" }
+}

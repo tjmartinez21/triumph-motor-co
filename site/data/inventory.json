@@ -1,0 +1,41 @@
+{
+  "updatedAt": "2026-10-11T14:00:00.000Z",
+  "cars": [
+    {
+      "id": "1864474261207802",
+      "title": "2023 Mazda cx-9 Grand Touring Sport Utility 4D",
+      "year": 2023,
+      "make": "Mazda",
+      "model": "CX-9",
+      "trim": "Grand Touring Sport Utility 4D",
+      "price": 25950,
+      "priceText": "$25,950",
+      "mileage": 78000,
+      "mileageUnit": "Miles",
+      "transmission": "Automatic",
+      "fuel": "Gasoline",
+      "exteriorColor": "Black",
+      "interiorColor": "Black",
+      "owners": 2,
+      "paidOff": true,
+      "titleStatus": null,
+      "vin": null,
+      "description": "Hard to find 7 passenger luxurious SUV\nEquipped with Grand Touring package Sunroof. Sirius Radio, heated, cooled seats\nRoomy, Sporty. And fun\nCash or bank Financing\nSe Habla Espanol\nCome see it at 7160 canyon drive",
+      "location": "Amarillo, TX",
+      "sold": false,
+      "pending": false,
+      "live": true,
+      "listedAt": "2026-10-08T19:07:17.000Z",
+      "fbUrl": "https://www.facebook.com/marketplace/item/1864474261207802/",
+      "photos": [
+        "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/843168200_10216871051886033_1486563079835339578_n.jpg?stp=dst-jpg_tt6&cstp=mx2048x1536&ctp=s960x960&_nc_cat=106&ccb=1-7&_nc_sid=454cf4&_nc_ohc=iZBp5M1WYycQ7kNvwF-i84Q&_nc_oc=AdqNxoEK79ufxVKpYy1Rj0_-YH9zH4TfYzWapI_sA2nPbdeO-DGpc-0GN53BuimaWts&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=ROuA6KjSrdvdXbZuY_HHTw&_nc_ss=79289&oh=00_AQNjwVS_qIsXqXl0rlqVGo5RfGZmyqLMVfKPWHes5YhyLA&oe=6AD173C1",
+        "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/839765891_10216870851681028_8512575250462526131_n.jpg?stp=dst-jpg_tt6&cstp=mx2048x1536&ctp=s960x960&_nc_cat=103&ccb=1-7&_nc_sid=946e27&_nc_ohc=G9B4XvZCCQsQ7kNvwH98r_H&_nc_oc=AdqkUP0MAXvGKGo5bj5cr6mzpFlPxtJGVIQektzdv9PPlOZdFLzsX5yofUiYYhY2_VE&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=ROuA6KjSrdvdXbZuY_HHTw&_nc_ss=79289&oh=00_AQPaRRtwZXtJUnyTTWtSjE19r2PaymAMp1PwF71mFWQgGw&oe=6AD17EBA",
+        "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/839303213_10216870851801031_153934845324954736_n.jpg?stp=dst-jpg_tt6&cstp=mx2048x1536&ctp=s960x960&_nc_cat=105&ccb=1-7&_nc_sid=946e27&_nc_ohc=GVFLxilq9q0Q7kNvwHCjbGD&_nc_oc=AdrjT8ih1GKC227mxQuyY3woVe4rlSX54RDb_TCpiscmQK05_ADS4D0Br2sFd7A-K6E&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=ROuA6KjSrdvdXbZuY_HHTw&_nc_ss=79289&oh=00_AQN18f5h8jbtR6NbM47fvZS1rSzUFxfj-9tKVkgrJXrqJQ&oe=6AD17166",
+        "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/827694207_10216870851641027_2272199696664324348_n.jpg?stp=dst-jpg_tt6&cstp=mx2048x1536&ctp=s960x960&_nc_cat=110&ccb=1-7&_nc_sid=946e27&_nc_ohc=Gs9TM3CzCeoQ7kNvwHRibcI&_nc_oc=Ado7gr1KENbNyMVWHPZ_cRWu5LaLtZnBX3QMY_aPUS2rMKJVvlfTqFTsDYtIKWKAIR8&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=ROuA6KjSrdvdXbZuY_HHTw&_nc_ss=79289&oh=00_AQOkLb2f5yjZ2icpk5bG0cu_mdVHbojKwVSVrRAR4W5x-w&oe=6AD168FA",
+        "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/839934588_10216870851481023_1377495440074047409_n.jpg?stp=dst-jpg_tt6&cstp=mx2048x1537&ctp=s960x960&_nc_cat=107&ccb=1-7&_nc_sid=946e27&_nc_ohc=47BBjFRN4QsQ7kNvwEPqvIw&_nc_oc=AdoRqL9s2RJpp4WHUSMIvnbp7XxYNbcLBPiB1L3b5he0bZmwXQu0RzSP-isAm5a7mL0&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=ROuA6KjSrdvdXbZuY_HHTw&_nc_ss=79289&oh=00_AQNrnWyLlid_aT7VAi5UKRG3RPxOfMCk0CmOmv9qV-4MvQ&oe=6AD173F0",
+        "https://scontent-hou1-1.xx.fbcdn.net/v/t39.30808-6/831399747_10216870851081013_2009433309859771458_n.jpg?stp=dst-jpg_tt6&cstp=mx1537x2048&ctp=s960x960&_nc_cat=110&ccb=1-7&_nc_sid=946e27&_nc_ohc=QyT0VAZPvsEQ7kNvwGdTxrm&_nc_oc=Adq3l10OF75lubatqs4KgHBPHYDJf8j7lI9uNQxxBrhlbDKFTuRwa8wG0sAYsM7n0x8&_nc_zt=23&_nc_ht=scontent-hou1-1.xx&_nc_gid=ROuA6KjSrdvdXbZuY_HHTw&_nc_ss=79289&oh=00_AQOsTDvJQv5d2Ra-41onQJ3OoSD6qLUX7HVyujX1yHSzgA&oe=6AD14D3B"
+      ],
+      "firstSeen": "2026-10-11T14:00:00.000Z"
+    }
+  ]
+}
