@@ -25,9 +25,14 @@ const SITE = path.join(ROOT, 'site');
 const INVENTORY = path.join(SITE, 'data', 'inventory.json');
 const PHOTOS = path.join(SITE, 'photos');
 const MANUAL_LINKS = path.join(ROOT, 'listings.txt');
+const IGNORED = path.join(SITE, 'data', 'ignored.json'); // other sellers' listings seen on the profile page
 
 const SELLER_PROFILE_ID = process.env.SELLER_PROFILE_ID || '1756646479';
 const MAX_PHOTOS = 20;
+// Facebook shows other people's listings on the profile page too, so every car must
+// belong to Dad: the listing's business name or seller name has to match this.
+const SELLER_MATCH = new RegExp(process.env.SELLER_MATCH || 'triumph motor|tino martinez', 'i');
+const isDads = c => SELLER_MATCH.test(`${c.business || ''} ${c.seller || ''}`);
 const FB = process.env.FB_ORIGIN || 'https://www.facebook.com'; // override only for local testing
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36';
 
@@ -176,7 +181,8 @@ function cleanDescription(text) {
 async function main() {
   const previous = await readJson(INVENTORY, { cars: [] });
   const known = new Map(previous.cars.map(c => [c.id, c]));
-  const manual = await readManualIds();
+  const manual = new Set(await readManualIds());
+  const ignored = new Set(await readJson(IGNORED, []));
   const cookies = parseCookies(process.env.FB_COOKIES);
 
   const browser = await chromium.launch({
@@ -190,7 +196,8 @@ async function main() {
   if (loggedCtx) discovery = await discoverFromProfile(loggedCtx);
   else log('No FB_COOKIES secret set — only checking known cars and listings.txt.');
 
-  const candidates = [...new Set([...known.keys(), ...discovery.ids, ...manual])];
+  const candidates = [...new Set([...known.keys(), ...discovery.ids, ...manual])]
+    .filter(id => manual.has(id) || !ignored.has(id));
   log(`Checking ${candidates.length} listing(s).`);
 
   const results = [];
@@ -207,6 +214,11 @@ async function main() {
     if (r.status === 'ok') {
       const c = r.car;
       const isVehicle = c.make || c.mileage != null;
+      if (!manual.has(id) && !isDads(c)) {
+        log(`  ${id}: belongs to another seller (${c.business || c.seller || 'unknown'}) — ignored`);
+        ignored.add(id);
+        continue;
+      }
       if (!isVehicle) { log(`  ${id}: not a vehicle — skipped`); continue; }
       if (c.sold || !c.live) { log(`  ${id}: sold/removed — taking down`); continue; }
       const photos = await syncPhotos(c);
@@ -214,6 +226,8 @@ async function main() {
       next.push({ ...rest, description: cleanDescription(c.description), photos,
         firstSeen: known.get(id)?.firstSeen || new Date().toISOString() });
       log(`  ${id}: ${c.title} — ${c.priceText}${c.pending ? ' (pending)' : ''} — ${photos.length} photos`);
+    } else if (known.has(id) && !manual.has(id) && !isDads(known.get(id))) {
+      log(`  ${id}: couldn't confirm the seller — removing`);
     } else if (r.status === 'gone' && known.has(id) && readOk > 0) {
       // "Not available" pages can be a temporary Facebook glitch, so a car has to
       // come back missing on two runs in a row (4+ hours apart) before it's taken down.
@@ -235,6 +249,8 @@ async function main() {
   for (const d of await fs.readdir(PHOTOS).catch(() => [])) {
     if (!liveIds.has(d)) await fs.rm(path.join(PHOTOS, d), { recursive: true, force: true });
   }
+
+  await fs.writeFile(IGNORED, JSON.stringify([...ignored].slice(-1000)) + '\n');
 
   next.sort((a, b) => (b.listedAt || '').localeCompare(a.listedAt || ''));
   const changed = JSON.stringify(next) !== JSON.stringify(previous.cars);

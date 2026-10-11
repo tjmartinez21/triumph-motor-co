@@ -58,6 +58,10 @@ function extractListing(listingId) {
     pending: d.is_pending === true,
     live: d.is_live !== false && d.is_hidden !== true,
     listedAt: d.creation_time ? new Date(d.creation_time * 1000).toISOString() : null,
+    seller: (d.marketplace_listing_seller && d.marketplace_listing_seller.name) || null,
+    business: d.dealership_name ||
+      (d.seller && d.seller.marketplace_user_profile && d.seller.marketplace_user_profile.business_information &&
+       d.seller.marketplace_user_profile.business_information.business_name) || null,
     photoUrls: photos,
     fbUrl: `https://www.facebook.com/marketplace/item/${listingId}/`,
   };
