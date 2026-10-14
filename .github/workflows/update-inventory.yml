@@ -2,11 +2,11 @@ name: Update inventory from Facebook
 
 on:
   schedule:
-    - cron: '7 12-23 * * *'   # hourly check, ~7am–6pm Central; the gate below runs the scraper once a day
+    - cron: '7 13-22 * * 1-5'   # hourly check on weekdays, ~8am–5pm Central; the gate below runs the scraper once a week
   workflow_dispatch:           # "Run workflow" button on GitHub (always runs right away)
   push:
     branches: [main]
-    paths: ['site/**', 'listings.txt', 'scraper/**', '.github/workflows/**']
+    paths: ['site/**', 'listings.txt', 'scraper/**']   # editing this workflow file doesn't trigger a scrape
 
 permissions:
   contents: write
@@ -32,17 +32,21 @@ jobs:
           if [ "$GITHUB_EVENT_NAME" != "schedule" ]; then
             echo "Manual or upload run: going ahead."; echo "run=true" >> "$GITHUB_OUTPUT"; exit 0
           fi
-          today=$(TZ=America/Chicago date +%F)
+          week=$(TZ=America/Chicago date +%G-W%V)
+          dow=$(TZ=America/Chicago date +%u)      # 1 = Monday ... 5 = Friday
           hour=$(TZ=America/Chicago date +%-H)
-          # A different random-looking hour each day, between 8am and 5pm Central.
-          seed=$(echo -n "$today-triumph" | md5sum | tr -dc '0-9' | cut -c1-6); seed=${seed:-0}
-          pick=$(( 8 + 10#$seed % 10 ))
+          # A different random-looking weekday and hour each week (Mon–Fri, 9am–4pm Central).
+          seed=$(echo -n "$week-triumph" | md5sum | tr -dc '0-9' | cut -c1-8); seed=${seed:-0}
+          pick_day=$(( 1 + 10#$seed % 5 ))
+          pick_hour=$(( 9 + (10#$seed / 5) % 8 ))
           last=$(cat site/data/last-run.txt 2>/dev/null || echo none)
-          echo "Today: $today  now: ${hour}:00  today's pick: ${pick}:00  last scrape: $last"
-          if [ "$last" = "$today" ]; then
-            echo "Already scraped today."; echo "run=false" >> "$GITHUB_OUTPUT"
-          elif [ "$hour" -ge "$pick" ]; then
-            echo "Time for today's scrape."; echo "run=true" >> "$GITHUB_OUTPUT"
+          # Older runs saved a date (2026-10-14); convert it to its week.
+          if echo "$last" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'; then last=$(date -d "$last" +%G-W%V); fi
+          echo "This week: $week  now: day $dow ${hour}:00  this week's pick: day $pick_day ${pick_hour}:00  last scrape: $last"
+          if [ "$last" = "$week" ]; then
+            echo "Already scraped this week."; echo "run=false" >> "$GITHUB_OUTPUT"
+          elif [ "$dow" -gt "$pick_day" ] || { [ "$dow" -eq "$pick_day" ] && [ "$hour" -ge "$pick_hour" ]; }; then
+            echo "Time for this week's scrape."; echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "Not yet."; echo "run=false" >> "$GITHUB_OUTPUT"
           fi
@@ -76,9 +80,9 @@ jobs:
 
       - name: Save changes
         run: |
-          # Record today's run (even if it failed) so a flagged account isn't retried every hour.
+          # Record this week's run (even if it failed) so a flagged account isn't retried every hour.
           if [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
-            TZ=America/Chicago date +%F > site/data/last-run.txt
+            TZ=America/Chicago date +%G-W%V > site/data/last-run.txt
           fi
           git config user.name "inventory-bot"
           git config user.email "inventory-bot@users.noreply.github.com"
